@@ -178,3 +178,16 @@ static tBln _tFile_Out_(_tFile fl, const tAChr *bffr)
 	}
 	return False;
 }
+
+static tBln _tFile_In_(_tFile fl, tAChr *bffr, tUSz bffrSz)
+{
+	tUSz bytesRead = 0LLU;
+	tInt ret = ReadFile((HANDLE)fl, bffr, bffrSz, (LPDWORD)&bytesRead, Null);
+	if (ret != False) return True;
+	else
+	{
+		if (bffrSz != bytesRead) pass; //TODO(dwnpfr): Set error.
+		else pass; //TODO(dwnpfr): Set error.
+	}
+	return False;
+}
