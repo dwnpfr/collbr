@@ -27,13 +27,20 @@ static tU8 PSEUDO_HEAP_MEM[HEAP_SZ] = {0};
 struct _tAllcBlk
 {
 	struct _tAllcBlk *nxt;
-	tUSz lng;
+#if Col_Bit == 64U
+	tUSz lng : 63U;
+#elif Col_Bit == 32U
+	tUSz lng : 31U;
+#endif
+	//TODO(dwnpfr): This is unused right now, but I'll never allocate enough memory while I'm developing this for it to matter for now.
+	tBln isFree : 1U;
 };
 static struct _tAllcBlk *frst = Null;
 
+//TODO(dwnpfr): Implement isFree flag.
 tPtr newAlloc(tUSz sz)
 {
-	struct _tAllcBlk newBlk = {.lng = sz, .nxt = Null};
+	struct _tAllcBlk newBlk = {.lng = sz, .nxt = Null, .isFree = False};
 	if (frst == Null)
 	{
 		if (sizeof(newBlk) + newBlk.lng > HEAP_SZ) return Null;
@@ -77,11 +84,27 @@ tPtr newAlloc(tUSz sz)
 	return Null;
 }
 
+//TODO(dwnpfr): Implement isFree flag.
 void deAlloc(tPtr ptr)
 {
-	return;
+	if (ptr == Null) return;
+	struct _tAllcBlk *allcBlk = (struct _tAllcBlk *)((tUSz)ptr - sizeof(struct _tAllcBlk));
+	allcBlk->isFree = True;
+	if (frst == allcBlk)
+	{
+		frst = allcBlk->nxt;
+		return;
+	}
+	struct _tAllcBlk *tmp = frst;
+	while (tmp->nxt != allcBlk)
+	{
+		if (tmp->nxt == Null) return;
+		tmp = tmp->nxt;
+	}
+	tmp->nxt = allcBlk->nxt;
 }
 
+//TODO(dwnpfr): Implement this.
 tPtr reAlloc(tPtr ptr, tUSz newSz)
 {
 	return Null;
@@ -89,5 +112,8 @@ tPtr reAlloc(tPtr ptr, tUSz newSz)
 
 tPtr numAlloc(tUSz num, tUSz szOf)
 {
-	return Null;
+	tUSz sz = num * szOf;
+	tPtr newAllc = newAlloc(sz);
+	memZr(newAllc, sz);
+	return newAllc;
 }
