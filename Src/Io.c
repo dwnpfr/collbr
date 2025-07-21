@@ -154,7 +154,6 @@ static _tFile __tFile_AOpen(const tChr *filePath, const tChr *md)
 #error 'Not implemented.'
 #endif
 
-
 static void _tFile_Close_(_tFile *fl)
 {
 #ifdef Col_Os_Windows
@@ -167,8 +166,9 @@ static void _tFile_Close_(_tFile *fl)
 
 static tBln _tFile_Out_(_tFile fl, const tAChr *bffr)
 {
+#ifdef Col_Os_Windows
 	tUSz lng = strLng(bffr);
-	tUSz bytesWritten = 0LLU;
+	DWORD bytesWritten = 0LLU;
 	tInt ret = WriteFile((HANDLE)fl, bffr, lng, &bytesWritten, Null);
 	if (ret != False) return True;
 	else
@@ -177,12 +177,16 @@ static tBln _tFile_Out_(_tFile fl, const tAChr *bffr)
 		else pass; //TODO(dwnpfr): Set error.
 	}
 	return False;
+#else
+#error 'Not implemented.'
+#endif
 }
 
 static tBln _tFile_In_(_tFile fl, tAChr *bffr, tUSz bffrSz)
 {
-	tUSz bytesRead = 0LLU;
-	tInt ret = ReadFile((HANDLE)fl, bffr, bffrSz, (LPDWORD)&bytesRead, Null);
+#ifdef Col_Os_Windows
+	DWORD bytesRead = 0LLU;
+	tInt ret = ReadFile((HANDLE)fl, bffr, bffrSz, &bytesRead, Null);
 	if (ret != False) return True;
 	else
 	{
@@ -190,4 +194,7 @@ static tBln _tFile_In_(_tFile fl, tAChr *bffr, tUSz bffrSz)
 		else pass; //TODO(dwnpfr): Set error.
 	}
 	return False;
+#else
+#error 'Not implemented.'
+#endif
 }
